@@ -1,8 +1,12 @@
 import json
 from playwright.sync_api import sync_playwright
+from time import perf_counter
+
 
 FOLLOWERS_PATH = "./connections/followers_and_following/followers_1.json"
 FOLLOWING_PATH = "./connections/followers_and_following/following.json"
+
+start = perf_counter()
 
 with open(FOLLOWERS_PATH, "r") as file:
     followers = json.load(file)
@@ -11,19 +15,20 @@ with open(FOLLOWING_PATH, "r") as file:
     following = json.load(file)
 following = following["relationships_following"]
 
-instagram_opps = []
-
-print("\nScanning for opps...")
+following_set = set()
 for potential_opp in following:
-    is_opp = True
+    following_set.add(potential_opp["title"])
 
-    for follower in followers:
-        if (potential_opp["title"] == follower["string_list_data"][0]["value"]):
-            is_opp = False
-            break
+followers_set = set()
+for follower in followers:
+    followers_set.add(follower["string_list_data"][0]["value"])
 
-    if (is_opp == True):
-        instagram_opps.append(potential_opp["title"])
+instagram_opps = []
+print("\nScanning for opps...")
+
+for potential_opp in following_set:
+    if potential_opp not in followers_set:
+        instagram_opps.append(potential_opp)
 
 # Instagram pages are rendered via JavaScript on the client side so the static HTML is not avaiable with python requests
 # instead we use a headless browser like Playwright to simulate the JavaScript rendering and then query the DOM
@@ -40,7 +45,6 @@ with sync_playwright() as playwright:
         content = page.content()
         if ("Profile isn't available" not in content):
             real_instagram_opps.append(instagram_opp)
-
     browser.close()
 
 print("\nList of your Instagram opps:")
@@ -48,3 +52,7 @@ for real_instagram_opp in real_instagram_opps:
     print("- " + real_instagram_opp)
 
 print("\nThank you for using Instagram Opps v3\n")
+
+stop = perf_counter()
+
+print("Elapsed time: " + str(round((stop - start), 6)) + "s")
