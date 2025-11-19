@@ -13,6 +13,7 @@ following = following["relationships_following"]
 
 instagram_opps = []
 
+print("\nScanning for opps...")
 for potential_opp in following:
     is_opp = True
 
@@ -42,8 +43,8 @@ with sync_playwright() as playwright:
 
     browser.close()
 
-print("List of your Instagram opps:")
+print("\nList of your Instagram opps:")
 for real_instagram_opp in real_instagram_opps:
-    print(real_instagram_opp)
+    print("- " + real_instagram_opp)
 
-print("Thank you for using Instagram Opps v3")
+print("\nThank you for using Instagram Opps v3\n")
